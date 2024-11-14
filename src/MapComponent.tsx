@@ -36,13 +36,15 @@ const lightingEffect = new LightingEffect({
   pointLight2,
 });
 
+const isMobile = window.innerWidth <= 768;
+
 const INITIAL_VIEW_STATE: ViewStateProps = {
-  longitude: -43.0988390451405,
-  latitude: -22.934947215826018,
-  zoom: 16.4,
+  longitude: isMobile ? -43.0995390451405 : -43.0989390451405,
+  latitude: isMobile ? -22.934947215826018 : -22.934947215826018,
+  zoom: isMobile ? 14.9 : 16.4,
   minZoom: 5,
   maxZoom: 18.4,
-  pitch: 40.5,
+  pitch: isMobile ? 40 : 40.5,
   bearing: -27,
 };
 
@@ -64,42 +66,45 @@ export const colorRange: Color[] = [
 function getTooltip({ object }: PickingInfo) {
   if (!object) return null;
 
-  const count = object.points.length;
+  const statusCounts = object.points.reduce((acc, point) => {
+    const status = point.source.status;
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
 
   return {
     html: `
       <div style="padding: 10px; font-size: 14px;">
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
           <span style="width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%; margin-right: 8px;"></span>
-          <span>Quitado:  <b>${count}</b></span>
+          <span>Quitado:  <b>${statusCounts['QUITADO'] || 0}</b></span>
         </div>
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
           <span style="width: 10px; height: 10px; background-color: #2196f3; border-radius: 50%; margin-right: 8px;"></span>
-          <span>Pagando:  <b>${count}</b></span>
+          <span>Pagando:  <b>${statusCounts['PAGANDO'] || 0}</b></span>
         </div>
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
           <span style="width: 10px; height: 10px; background-color: #f44336; border-radius: 50%; margin-right: 8px;"></span>
-          <span>Cancelado:  <b>${count}</b></span>
+          <span>Cancelado:  <b>${statusCounts['CANCELADO'] || 0}</b></span>
         </div>
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
           <span style="width: 10px; height: 10px; background-color: #ff9800; border-radius: 50%; margin-right: 8px;"></span>
-          <span>Pg.Juros/Parc.:  <b>${count}</b></span>
+          <span>Pg.Juros/Parc.:  <b>${statusCounts['PAGO COM JUROS/PAGO PARCIAL'] || 0}</b></span>
         </div>
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
           <span style="width: 10px; height: 10px; background-color: #9c27b0; border-radius: 50%; margin-right: 8px;"></span>
-          <span>Solic. Repr.:  <b>${count}</b></span>
+          <span>Solic. Repr.:  <b>${statusCounts['SOLICITAÇÃO REPROVADA'] || 0}</b></span>
         </div>
         <div style="display: flex; align-items: center;">
           <span style="width: 10px; height: 10px; background-color: #ff5722; border-radius: 50%; margin-right: 8px;"></span>
-          <span>Inadimplente: <b>${count}</b></span>
+          <span>Inadimplente: <b>${statusCounts['INADIMPLENTE'] || 0}</b></span>
         </div>
       </div>
     `,
   };
 }
 
-
-type DataPoint = [number, number];
+type DataPoint = { lng: number; lat: number; status: string };
 
 interface MapComponentProps {
   data?: DataPoint[] | null;
@@ -121,10 +126,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       const loadedData = await load(DATA_URL, CSVLoader);
-      const pointsData: DataPoint[] = loadedData.data.map((d: { lng: number; lat: number }) => [
-        d.lng,
-        d.lat,
-      ]);
+      const pointsData: DataPoint[] = loadedData.data.map((d: { lng: number; lat: number; status: string }) => ({
+        lng: d.lng,
+        lat: d.lat,
+        status: d.status,
+      }));
       setPoints(pointsData);
     };
 
@@ -141,7 +147,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       elevationScale: points && points.length ? 5 : 0,
       opacity: 0.5,
       extruded: true,
-      getPosition: (d) => d,
+      getPosition: (d) => [d.lng, d.lat],
       pickable: true,
       radius,
       upperPercentile,
@@ -158,15 +164,32 @@ const MapComponent: React.FC<MapComponentProps> = ({
   ];
 
   return (
-    <DeckGL
-      layers={layers}
-      effects={[lightingEffect]}
-      initialViewState={INITIAL_VIEW_STATE}
-      controller={true}
-      getTooltip={getTooltip}
-    >
-      <Map reuseMaps mapStyle={mapStyle} />
-    </DeckGL>
+    <div >
+      <DeckGL
+        layers={layers}
+        effects={[lightingEffect]}
+        initialViewState={INITIAL_VIEW_STATE}
+        controller={true}
+        getTooltip={getTooltip}
+      >
+        <Map reuseMaps mapStyle={mapStyle} />
+      </DeckGL>
+      {/* Image Overlay in Bottom Left */}
+      <div style={{
+        position: 'fixed',
+        bottom: 10,
+        left: 10,
+        zIndex: 1,
+      }}>
+        <a href="https://www.instagram.com/bancopreve/" target="_blank">
+          <img
+            src="icon.png"
+            alt="Map Overlay"
+            style={{ width: '40px', height: 'auto' }}
+          />
+        </a>
+      </div>
+    </div>
   );
 };
 
