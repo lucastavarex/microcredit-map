@@ -54,6 +54,7 @@ const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.j
 // const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json'
 // const MAP_STYLE = 	'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
 // const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+
 export const colorRange: Color[] = [
   [1, 152, 189],
   [73, 227, 206],
