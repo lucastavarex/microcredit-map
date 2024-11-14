@@ -1,4 +1,4 @@
-// MapComponent.tsx
+//@ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Map } from 'react-map-gl/maplibre';
 import { AmbientLight, PointLight, LightingEffect } from '@deck.gl/core';
@@ -11,7 +11,7 @@ import type { Color, PickingInfo, ViewStateProps } from '@deck.gl/core';
 
 // Source data CSV
 const DATA_URL =
-  'https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/3d-heatmap/heatmap-data.csv';
+  'https://raw.githubusercontent.com/lucastavarex/microcredit-map/refs/heads/main/src/assets/coordinates.csv';
 
 const ambientLight = new AmbientLight({
   color: [255, 255, 255],
@@ -63,14 +63,41 @@ export const colorRange: Color[] = [
 
 function getTooltip({ object }: PickingInfo) {
   if (!object) return null;
-  const lat = object.position[1];
-  const lng = object.position[0];
+
   const count = object.points.length;
-  return `\
-    latitude: ${Number.isFinite(lat) ? lat.toFixed(6) : ''}
-    longitude: ${Number.isFinite(lng) ? lng.toFixed(6) : ''}
-    ${count} Accidents`;
+
+  return {
+    html: `
+      <div style="padding: 10px; font-size: 14px;">
+        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+          <span style="width: 10px; height: 10px; background-color: #4caf50; border-radius: 50%; margin-right: 8px;"></span>
+          <span>Quitado:  <b>${count}</b></span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+          <span style="width: 10px; height: 10px; background-color: #2196f3; border-radius: 50%; margin-right: 8px;"></span>
+          <span>Pagando:  <b>${count}</b></span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+          <span style="width: 10px; height: 10px; background-color: #f44336; border-radius: 50%; margin-right: 8px;"></span>
+          <span>Cancelado:  <b>${count}</b></span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+          <span style="width: 10px; height: 10px; background-color: #ff9800; border-radius: 50%; margin-right: 8px;"></span>
+          <span>Pg.Juros/Parc.:  <b>${count}</b></span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+          <span style="width: 10px; height: 10px; background-color: #9c27b0; border-radius: 50%; margin-right: 8px;"></span>
+          <span>Solic. Repr.:  <b>${count}</b></span>
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span style="width: 10px; height: 10px; background-color: #ff5722; border-radius: 50%; margin-right: 8px;"></span>
+          <span>Inadimplente: <b>${count}</b></span>
+        </div>
+      </div>
+    `,
+  };
 }
+
 
 type DataPoint = [number, number];
 
@@ -85,7 +112,7 @@ interface MapComponentProps {
 const MapComponent: React.FC<MapComponentProps> = ({
   data = null,
   mapStyle = MAP_STYLE,
-  radius = 1000,
+  radius = 50,
   upperPercentile = 100,
   coverage = 1,
 }) => {
@@ -110,8 +137,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
       colorRange,
       coverage,
       data: points,
-      elevationRange: [0, 3000],
-      elevationScale: points && points.length ? 50 : 0,
+      elevationRange: [0, 5],
+      elevationScale: points && points.length ? 5 : 0,
+      opacity: 0.5,
       extruded: true,
       getPosition: (d) => d,
       pickable: true,
