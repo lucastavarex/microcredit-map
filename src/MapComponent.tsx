@@ -6,8 +6,9 @@ import { HexagonLayer } from '@deck.gl/aggregation-layers';
 import DeckGL from '@deck.gl/react';
 import { CSVLoader } from '@loaders.gl/csv';
 import { load } from '@loaders.gl/core';
-
+import "./MapComponent.css"
 import type { Color, PickingInfo, ViewStateProps } from '@deck.gl/core';
+import SliderComponent from './SliderComponent';
 
 // Source data CSV
 const DATA_URL =
@@ -123,7 +124,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   coverage = 1,
 }) => {
   const [points, setPoints] = useState<DataPoint[] | null>(null);
-  console.log('points', points)
+  const [radiusValue, setRadiusValue] = useState(radius); // State for radius value
   useEffect(() => {
     const fetchData = async () => {
       const loadedData = await load(DATA_URL, CSVLoader);
@@ -144,13 +145,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
       colorRange,
       coverage,
       data: points,
-      elevationRange: [0, 5],
+      elevationRange: [0, 100],
       elevationScale: points && points.length ? 5 : 0,
       opacity: 0.5,
       extruded: true,
       getPosition: (d) => [d.lng, d.lat],
       pickable: true,
-      radius,
+      radius: radiusValue,
       upperPercentile,
       material: {
         ambient: 0.64,
@@ -176,10 +177,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
         <Map reuseMaps mapStyle={mapStyle} />
       </DeckGL>
       {/* Image Overlay in Bottom Left */}
-      <div style={{
+      <div className="icon" style={{
         position: 'fixed',
-        bottom: 10,
-        left: 10,
         zIndex: 1,
       }}>
         <a href="https://www.instagram.com/bancopreve/" target="_blank">
@@ -190,6 +189,25 @@ const MapComponent: React.FC<MapComponentProps> = ({
           />
         </a>
       </div>
+      <div style={{
+        position: 'fixed',
+        bottom: 80,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '80%',
+        maxWidth: '600px',
+        zIndex: 1,
+      }}>
+        <SliderComponent
+          value={radiusValue}
+          min={50}
+          max={300}
+          step={10}
+          onChange={setRadiusValue}
+        />
+      </div>
+
+
     </div>
   );
 };

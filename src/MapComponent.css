@@ -1,0 +1,14 @@
+#tickmarks option {
+  font-size: 16px; /* Adjust the size as needed */
+}
+.icon{
+  bottom: 20px;
+  left: "20px",
+}
+
+@media (max-width: 768px) {
+  .icon{
+    top: 20px;
+    left: 10px;
+  }
+}
