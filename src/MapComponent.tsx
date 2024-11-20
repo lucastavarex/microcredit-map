@@ -12,7 +12,7 @@ import SliderComponent from './SliderComponent';
 
 // Source data CSV
 const DATA_URL =
-  'https://raw.githubusercontent.com/lucastavarex/microcredit-map/refs/heads/main/src/assets/coordinates.csv';
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTuxVeI--E1Jue1Ir2qdwwefyGhF77WCaTOcR2iHJ81ylB1VjjfVpxALN8wVJqTmQ/pub?gid=1334782578&single=true&output=csv';
 
 const ambientLight = new AmbientLight({
   color: [255, 255, 255],
