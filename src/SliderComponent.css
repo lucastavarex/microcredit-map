@@ -3,7 +3,7 @@
 :root {
     --yellow: #ffd049;
     --light-yellow: #fdf2d2;
-    --orange: #ffa929;
+    --orange: #55a673;
     --light-gray: #e3e4e8;
     --gray: #71738b;
     --light-blue: #7a7c93;
@@ -122,7 +122,7 @@ body {
 }
 
 .tick-slider-progress {
-    background-color: var(--yellow);
+    background-color: #7fcd9b;
 }
 
 .tick-slider-tick-container {

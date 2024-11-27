@@ -1,4 +1,3 @@
-//@ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Map } from 'react-map-gl/maplibre';
 import { AmbientLight, PointLight, LightingEffect } from '@deck.gl/core';
@@ -9,6 +8,7 @@ import { load } from '@loaders.gl/core';
 import "./MapComponent.css"
 import type { Color, PickingInfo, ViewStateProps } from '@deck.gl/core';
 import SliderComponent from './SliderComponent';
+import { FormControl, InputLabel, MenuItem, Select, Checkbox, ListItemText } from '@mui/material';
 
 // Source data CSV
 const DATA_URL =
@@ -125,6 +125,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
 }) => {
   const [points, setPoints] = useState<DataPoint[] | null>(null);
   const [radiusValue, setRadiusValue] = useState(radius); // State for radius value
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]); // State for selected statuses
+
   useEffect(() => {
     const fetchData = async () => {
       const loadedData = await load(DATA_URL, CSVLoader);
@@ -139,14 +141,22 @@ const MapComponent: React.FC<MapComponentProps> = ({
     fetchData();
   }, []);
 
+  const handleStatusChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSelectedStatuses(event.target.value as string[]);
+  };
+
+  const filteredPoints = points?.filter((point) =>
+    selectedStatuses.length === 0 || selectedStatuses.includes(point.status)
+  );
+
   const layers = [
     new HexagonLayer<DataPoint>({
       id: 'heatmap',
       colorRange,
       coverage,
-      data: points,
+      data: filteredPoints,
       elevationRange: [0, 100],
-      elevationScale: points && points.length ? 5 : 0,
+      elevationScale: filteredPoints && filteredPoints.length ? 5 : 0,
       opacity: 0.5,
       extruded: true,
       getPosition: (d) => [d.lng, d.lat],
@@ -166,7 +176,38 @@ const MapComponent: React.FC<MapComponentProps> = ({
   ];
 
   return (
-    <div >
+    <div>
+      <div style={{ position: 'fixed', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
+        <FormControl
+          variant="outlined"
+          style={{
+            minWidth: 350,
+            maxWidth: 350,
+            backgroundColor: '#ffffff',
+            borderRadius: 8,
+            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <InputLabel style={{ color: '#7fcd9b', fontWeight: 'bold' }}>Status</InputLabel>
+          <Select
+            multiple
+            value={selectedStatuses}
+            onChange={handleStatusChange}
+            renderValue={(selected) => (selected as string[]).join(', ')}
+            style={{ color: '#4f4f4f' }}
+          >
+            {['QUITADO', 'PAGANDO', 'CANCELADO', 'PAGO COM JUROS/PAGO PARCIAL', 'SOLICITAÇÃO REPROVADA', 'INADIMPLENTE'].map(
+              (status) => (
+                <MenuItem key={status} value={status}>
+                  <Checkbox checked={selectedStatuses.includes(status)} style={{ color: '#7fcd9b' }} />
+                  <ListItemText primary={status} />
+                </MenuItem>
+              )
+            )}
+          </Select>
+        </FormControl>
+
+      </div>
       <DeckGL
         layers={layers}
         effects={[lightingEffect]}
@@ -177,7 +218,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         <Map reuseMaps mapStyle={mapStyle} />
       </DeckGL>
       {/* Image Overlay in Bottom Left */}
-      <div className="icon" style={{
+      {/* <div className="icon" style={{
         position: 'fixed',
         zIndex: 1,
       }}>
@@ -188,7 +229,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
             style={{ width: '40px', height: 'auto' }}
           />
         </a>
-      </div>
+      </div> */}
       <div style={{
         position: 'fixed',
         bottom: 80,
@@ -206,8 +247,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
           onChange={setRadiusValue}
         />
       </div>
-
-
     </div>
   );
 };
